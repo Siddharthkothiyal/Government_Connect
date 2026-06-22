@@ -1,0 +1,86 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id                Int                 @id @default(autoincrement())
+  name              String
+  email             String              @unique
+  password          String
+  role              Role                @default(USER)
+  createdAt         DateTime            @default(now())
+  savedSchemes      SavedScheme[]
+  searchHistory     UserSearchHistory[]
+}
+
+model Scheme {
+  id                Int                 @id @default(autoincrement())
+  name              String
+  description       String
+  benefits          String
+  applicationProcess String
+  officialUrl       String?
+  category          String
+  state             String?
+  isActive          Boolean             @default(true)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  eligibilityRules  EligibilityRule[]
+  documents         Document[]
+  savedSchemes      SavedScheme[]
+}
+
+model EligibilityRule {
+  id                Int                 @id @default(autoincrement())
+  schemeId          Int
+  scheme            Scheme              @relation(fields: [schemeId], references: [id], onDelete: Cascade)
+  minAge            Int?
+  maxAge            Int?
+  incomeLimit       Int?
+  occupation        String?
+  category          String?
+  student           Boolean?
+  farmer            Boolean?
+  disabled          Boolean?
+  state             String?
+}
+
+model Document {
+  id                Int                 @id @default(autoincrement())
+  schemeId          Int
+  scheme            Scheme              @relation(fields: [schemeId], references: [id], onDelete: Cascade)
+  documentName      String
+}
+
+model UserSearchHistory {
+  id                Int                 @id @default(autoincrement())
+  userId            Int
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  queryData         Json
+  createdAt         DateTime            @default(now())
+}
+
+model SavedScheme {
+  id                Int                 @id @default(autoincrement())
+  userId            Int
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schemeId          Int
+  scheme            Scheme              @relation(fields: [schemeId], references: [id], onDelete: Cascade)
+  createdAt         DateTime            @default(now())
+  
+  @@unique([userId, schemeId])
+}
+
