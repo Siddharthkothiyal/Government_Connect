@@ -2,8 +2,12 @@ import { Request, Response } from 'express';
 import prisma from '../../config/prisma';
 
 export class UsersController {
+  private getNumericParam(value: string | string[] | undefined) {
+    return Number(Array.isArray(value) ? value[0] : value);
+  }
+
   async saveScheme(req: Request, res: Response) {
-    const schemeId = parseInt(req.params.schemeId);
+    const schemeId = this.getNumericParam(req.params.schemeId);
     const saved = await prisma.savedScheme.create({
       data: {
         userId: req.user!.id,
@@ -15,7 +19,7 @@ export class UsersController {
   }
 
   async unsaveScheme(req: Request, res: Response) {
-    const schemeId = parseInt(req.params.schemeId);
+    const schemeId = this.getNumericParam(req.params.schemeId);
     await prisma.savedScheme.delete({
       where: {
         userId_schemeId: {

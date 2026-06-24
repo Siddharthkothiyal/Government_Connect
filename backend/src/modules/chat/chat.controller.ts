@@ -21,12 +21,12 @@ export class ChatController {
       include: { documents: true, eligibilityRules: true },
     });
 
-    const context = schemes.map((s) => `
-Scheme: ${s.name}
-Description: ${s.description}
-Benefits: ${s.benefits}
-Application Process: ${s.applicationProcess}
-Documents: ${s.documents.map((d) => d.documentName).join(', ')}
+    const context = schemes.map((scheme: { name: string; description: string; benefits: string; applicationProcess: string; documents: Array<{ documentName: string }> }) => `
+Scheme: ${scheme.name}
+Description: ${scheme.description}
+Benefits: ${scheme.benefits}
+Application Process: ${scheme.applicationProcess}
+Documents: ${scheme.documents.map((document: { documentName: string }) => document.documentName).join(', ')}
 `).join('\n---\n');
 
     const prompt = `

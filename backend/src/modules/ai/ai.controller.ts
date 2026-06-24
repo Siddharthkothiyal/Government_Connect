@@ -21,7 +21,7 @@ Name: ${scheme.name}
 Description: ${scheme.description}
 Benefits: ${scheme.benefits}
 Application Process: ${scheme.applicationProcess}
-Documents Required: ${scheme.documents.map(d => d.documentName).join(', ')}
+Documents Required: ${scheme.documents.map((document: { documentName: string }) => document.documentName).join(', ')}
 Official URL: ${scheme.officialUrl || 'Not available'}
 
 User Profile:

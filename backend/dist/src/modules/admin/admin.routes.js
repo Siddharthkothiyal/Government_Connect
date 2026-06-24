@@ -1,0 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const admin_controller_1 = require("./admin.controller");
+const auth_middleware_1 = require("../../middleware/auth.middleware");
+const router = (0, express_1.Router)();
+const adminController = new admin_controller_1.AdminController();
+router.use(auth_middleware_1.authenticateToken, auth_middleware_1.requireAdmin);
+router.post('/schemes', (req, res) => adminController.createScheme(req, res));
+router.put('/schemes/:id', (req, res) => adminController.updateScheme(req, res));
+router.delete('/schemes/:id', (req, res) => adminController.deleteScheme(req, res));
+router.post('/rules', (req, res) => adminController.createEligibilityRule(req, res));
+router.put('/rules/:id', (req, res) => adminController.updateEligibilityRule(req, res));
+router.delete('/rules/:id', (req, res) => adminController.deleteEligibilityRule(req, res));
+exports.default = router;

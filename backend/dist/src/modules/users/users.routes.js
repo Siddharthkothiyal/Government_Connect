@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const users_controller_1 = require("./users.controller");
+const auth_middleware_1 = require("../../middleware/auth.middleware");
+const router = (0, express_1.Router)();
+const usersController = new users_controller_1.UsersController();
+router.use(auth_middleware_1.authenticateToken);
+router.post('/saved/:schemeId', (req, res) => usersController.saveScheme(req, res));
+router.delete('/saved/:schemeId', (req, res) => usersController.unsaveScheme(req, res));
+router.get('/saved', (req, res) => usersController.getSavedSchemes(req, res));
+router.get('/history', (req, res) => usersController.getSearchHistory(req, res));
+exports.default = router;

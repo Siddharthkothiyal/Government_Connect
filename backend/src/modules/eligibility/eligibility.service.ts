@@ -10,6 +10,31 @@ interface UserProfile {
   student?: boolean;
 }
 
+interface RuleCriteria {
+  minAge?: number | null;
+  maxAge?: number | null;
+  incomeLimit?: number | null;
+  occupation?: string | null;
+  category?: string | null;
+  student?: boolean | null;
+  farmer?: boolean | null;
+  disabled?: boolean | null;
+  state?: string | null;
+}
+
+interface SchemeWithRules {
+  id: number;
+  name: string;
+  eligibilityRules: RuleCriteria[];
+}
+
+interface EligibleSchemeResult {
+  schemeId: number;
+  schemeName: string;
+  scheme: SchemeWithRules;
+  eligibilityReason: string;
+}
+
 export class EligibilityService {
   async checkEligibility(profile: UserProfile) {
     const schemes = await prisma.scheme.findMany({
@@ -17,29 +42,31 @@ export class EligibilityService {
       include: { eligibilityRules: true, documents: true },
     });
 
-    const eligibleSchemes = schemes
-      .map((scheme) => {
-        const matchingRules = scheme.eligibilityRules.filter((rule) =>
-          this.isRuleMatching(rule, profile)
-        );
+    const eligibleSchemes = schemes.reduce<EligibleSchemeResult[]>((results, scheme) => {
+      const matchingRules = scheme.eligibilityRules.filter((rule) =>
+        this.isRuleMatching(rule, profile)
+      );
 
-        if (matchingRules.length > 0) {
-          return {
-            schemeId: scheme.id,
-            schemeName: scheme.name,
-            scheme,
-            eligibilityReason: this.getEligibilityReason(matchingRules, profile),
-          };
-        }
+      if (matchingRules.length > 0) {
+        results.push({
+          schemeId: scheme.id,
+          schemeName: scheme.name,
+          scheme: {
+            id: scheme.id,
+            name: scheme.name,
+            eligibilityRules: scheme.eligibilityRules,
+          },
+          eligibilityReason: this.getEligibilityReason(matchingRules, profile),
+        });
+      }
 
-        return null;
-      })
-      .filter((s) => s !== null);
+      return results;
+    }, []);
 
     return eligibleSchemes;
   }
 
-  private isRuleMatching(rule: any, profile: UserProfile): boolean {
+  private isRuleMatching(rule: RuleCriteria, profile: UserProfile): boolean {
     const conditions: boolean[] = [];
 
     if (rule.minAge !== null && rule.minAge !== undefined) {
@@ -81,7 +108,7 @@ export class EligibilityService {
     return conditions.length === 0 || conditions.every((c) => c);
   }
 
-  private getEligibilityReason(rules: any[], profile: UserProfile): string {
+  private getEligibilityReason(rules: RuleCriteria[], profile: UserProfile): string {
     const reasons: string[] = [];
     const rule = rules[0];
 

@@ -1,6 +1,4 @@
-import { PrismaClient } from '../src/generated/prisma';
-
-const prisma = new PrismaClient();
+import prisma from "../src/config/prisma";
 
 const schemes = [
   {
@@ -137,6 +135,12 @@ const schemes = [
 
 async function main() {
   console.log('🌱 Starting to seed database...');
+
+  await prisma.savedScheme.deleteMany();
+  await prisma.userSearchHistory.deleteMany();
+  await prisma.document.deleteMany();
+  await prisma.eligibilityRule.deleteMany();
+  await prisma.scheme.deleteMany();
 
   for (const schemeData of schemes) {
     const { documents, eligibilityRules, ...scheme } = schemeData;

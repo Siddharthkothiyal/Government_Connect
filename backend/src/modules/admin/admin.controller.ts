@@ -5,6 +5,10 @@ import { schemeCreateSchema, schemeUpdateSchema, eligibilityRuleCreateSchema } f
 const adminService = new AdminService();
 
 export class AdminController {
+  private getNumericParam(value: string | string[] | undefined) {
+    return Number(Array.isArray(value) ? value[0] : value);
+  }
+
   async createScheme(req: Request, res: Response) {
     const data = schemeCreateSchema.parse(req.body);
     const scheme = await adminService.createScheme(data);
@@ -12,14 +16,14 @@ export class AdminController {
   }
 
   async updateScheme(req: Request, res: Response) {
-    const id = parseInt(req.params.id);
+    const id = this.getNumericParam(req.params.id);
     const data = schemeUpdateSchema.parse(req.body);
     const scheme = await adminService.updateScheme(id, data);
     res.json({ success: true, data: scheme });
   }
 
   async deleteScheme(req: Request, res: Response) {
-    const id = parseInt(req.params.id);
+    const id = this.getNumericParam(req.params.id);
     await adminService.deleteScheme(id);
     res.json({ success: true, message: 'Scheme deleted successfully' });
   }
@@ -31,14 +35,14 @@ export class AdminController {
   }
 
   async updateEligibilityRule(req: Request, res: Response) {
-    const id = parseInt(req.params.id);
+    const id = this.getNumericParam(req.params.id);
     const data = eligibilityRuleCreateSchema.partial().parse(req.body);
     const rule = await adminService.updateEligibilityRule(id, data);
     res.json({ success: true, data: rule });
   }
 
   async deleteEligibilityRule(req: Request, res: Response) {
-    const id = parseInt(req.params.id);
+    const id = this.getNumericParam(req.params.id);
     await adminService.deleteEligibilityRule(id);
     res.json({ success: true, message: 'Eligibility rule deleted successfully' });
   }
