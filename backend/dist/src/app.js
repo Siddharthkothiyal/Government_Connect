@@ -9,6 +9,7 @@ const helmet_1 = __importDefault(require("helmet"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const pino_http_1 = __importDefault(require("pino-http"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const env_1 = require("./config/env");
 const auth_routes_1 = __importDefault(require("./modules/auth/auth.routes"));
 const schemes_routes_1 = __importDefault(require("./modules/schemes/schemes.routes"));
 const eligibility_routes_1 = __importDefault(require("./modules/eligibility/eligibility.routes"));
@@ -26,7 +27,7 @@ const limiter = (0, express_rate_limit_1.default)({
 });
 app.use((0, pino_http_1.default)());
 app.use((0, helmet_1.default)());
-app.use((0, cors_1.default)());
+app.use((0, cors_1.default)({ origin: env_1.env.FRONTEND_URL }));
 app.use(limiter);
 app.use(express_1.default.json());
 app.use('/api/auth', auth_routes_1.default);

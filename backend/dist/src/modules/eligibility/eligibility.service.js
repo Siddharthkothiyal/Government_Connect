@@ -13,16 +13,12 @@ class EligibilityService {
         });
         const eligibleSchemes = schemes.reduce((results, scheme) => {
             const matchingRules = scheme.eligibilityRules.filter((rule) => this.isRuleMatching(rule, profile));
-            if (matchingRules.length > 0) {
+            if (matchingRules.length > 0 || scheme.eligibilityRules.length === 0) {
                 results.push({
                     schemeId: scheme.id,
                     schemeName: scheme.name,
-                    scheme: {
-                        id: scheme.id,
-                        name: scheme.name,
-                        eligibilityRules: scheme.eligibilityRules,
-                    },
-                    eligibilityReason: this.getEligibilityReason(matchingRules, profile),
+                    scheme: scheme,
+                    eligibilityReason: this.getEligibilityReason(matchingRules.length > 0 ? matchingRules : scheme.eligibilityRules, profile),
                 });
             }
             return results;
@@ -41,44 +37,67 @@ class EligibilityService {
             conditions.push(profile.annualIncome <= rule.incomeLimit);
         }
         if (rule.occupation) {
-            conditions.push(profile.occupation?.toLowerCase() === rule.occupation.toLowerCase());
+            conditions.push((profile.occupation || '').toLowerCase() === rule.occupation.toLowerCase());
         }
         if (rule.category) {
-            conditions.push(profile.category?.toLowerCase() === rule.category.toLowerCase());
+            const profileCat = (profile.category || '').toLowerCase();
+            const ruleCat = rule.category.toLowerCase();
+            if (ruleCat === 'bpl' || ruleCat === 'ews/lig') {
+                conditions.push(profile.annualIncome <= 500000 || profileCat === ruleCat);
+            }
+            else {
+                conditions.push(profileCat === ruleCat);
+            }
         }
         if (rule.student !== null && rule.student !== undefined) {
-            conditions.push(profile.student === rule.student);
+            conditions.push(!!profile.student === rule.student);
         }
         if (rule.farmer !== null && rule.farmer !== undefined) {
-            conditions.push((profile.occupation?.toLowerCase() === 'farmer') === rule.farmer);
+            const isFarmer = (profile.occupation || '').toLowerCase() === 'farmer';
+            conditions.push(isFarmer === rule.farmer);
         }
         if (rule.disabled !== null && rule.disabled !== undefined) {
-            conditions.push(profile.disability === rule.disabled);
+            conditions.push(!!profile.disability === rule.disabled);
         }
         if (rule.state) {
-            conditions.push(profile.state?.toLowerCase() === rule.state.toLowerCase());
+            conditions.push((profile.state || '').toLowerCase() === rule.state.toLowerCase());
         }
         return conditions.length === 0 || conditions.every((c) => c);
     }
     getEligibilityReason(rules, profile) {
         const reasons = [];
-        const rule = rules[0];
-        if (rule.minAge || rule.maxAge) {
-            reasons.push(`Age ${profile.age} meets the requirement`);
+        if (rules.length === 0) {
+            return 'Open to all eligible citizens';
         }
-        if (rule.incomeLimit) {
-            reasons.push(`Income within limit`);
+        const rule = rules[0];
+        if (rule.minAge !== null && rule.minAge !== undefined) {
+            reasons.push(`Age ${profile.age} meets the minimum age requirement of ${rule.minAge}`);
+        }
+        if (rule.maxAge !== null && rule.maxAge !== undefined) {
+            reasons.push(`Age ${profile.age} is within the maximum age of ${rule.maxAge}`);
+        }
+        if (rule.incomeLimit !== null && rule.incomeLimit !== undefined) {
+            reasons.push(`Income (₹${profile.annualIncome?.toLocaleString() || 0}) is within the limit of ₹${rule.incomeLimit.toLocaleString()}`);
         }
         if (rule.occupation) {
-            reasons.push(`Occupation matches`);
+            reasons.push(`Occupation (${profile.occupation}) matches`);
         }
         if (rule.category) {
-            reasons.push(`Category matches`);
+            reasons.push(`Category (${profile.category || 'General'}) qualifies`);
+        }
+        if (rule.student === true) {
+            reasons.push('You are a student');
+        }
+        if (rule.farmer === true) {
+            reasons.push('You are registered as a farmer');
+        }
+        if (rule.disabled === true) {
+            reasons.push('Persons with disability benefit applies');
         }
         if (rule.state) {
-            reasons.push(`State matches`);
+            reasons.push(`State matches (${profile.state})`);
         }
-        return reasons.length > 0 ? reasons.join(', ') : 'Meets all eligibility criteria';
+        return reasons.length > 0 ? reasons.join('; ') : 'Meets all eligibility criteria';
     }
 }
 exports.EligibilityService = EligibilityService;

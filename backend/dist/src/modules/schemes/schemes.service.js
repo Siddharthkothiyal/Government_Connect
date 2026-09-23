@@ -42,10 +42,39 @@ class SchemesService {
         };
     }
     async getSchemeById(id) {
-        return prisma_1.default.scheme.findUniqueOrThrow({
-            where: { id },
-            include: { eligibilityRules: true, documents: true },
-        });
+        try {
+            return await prisma_1.default.scheme.findUniqueOrThrow({
+                where: { id },
+                include: { eligibilityRules: true, documents: true },
+            });
+        }
+        catch {
+            return null;
+        }
+    }
+    async getSchemeByNameOrId(nameOrId) {
+        try {
+            const byName = await prisma_1.default.scheme.findFirst({
+                where: {
+                    OR: [
+                        { name: { contains: nameOrId, mode: 'insensitive' } },
+                        { name: { equals: nameOrId, mode: 'insensitive' } },
+                    ],
+                    isActive: true,
+                },
+                include: { eligibilityRules: true, documents: true },
+            });
+            if (byName)
+                return byName;
+            const id = Number(nameOrId);
+            if (!isNaN(id) && id > 0) {
+                return await this.getSchemeById(id);
+            }
+            return null;
+        }
+        catch {
+            return null;
+        }
     }
     async getSchemesByCategory(category) {
         return prisma_1.default.scheme.findMany({

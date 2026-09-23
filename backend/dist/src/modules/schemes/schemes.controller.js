@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SchemesController = void 0;
 const schemes_service_1 = require("./schemes.service");
+const transform_1 = require("../../utils/transform");
 const schemesService = new schemes_service_1.SchemesService();
 class SchemesController {
     getStringParam(value) {
@@ -30,9 +31,21 @@ class SchemesController {
         res.json({ success: true, data: result });
     }
     async getSchemeById(req, res) {
-        const id = this.getNumericParam(req.params.id, 0);
-        const scheme = await schemesService.getSchemeById(id);
-        res.json({ success: true, data: scheme });
+        const idParam = this.getStringParam(req.params.id);
+        let scheme;
+        if (idParam && !isNaN(Number(idParam))) {
+            const id = Number(idParam);
+            scheme = await schemesService.getSchemeById(id);
+        }
+        else {
+            scheme = await schemesService.getSchemeByNameOrId(idParam || '');
+        }
+        if (!scheme) {
+            res.status(404).json({ success: false, message: 'Scheme not found' });
+            return;
+        }
+        const frontendScheme = (0, transform_1.toFrontendScheme)(scheme);
+        res.json(frontendScheme);
     }
     async getSchemesByCategory(req, res) {
         const category = this.getStringParam(req.params.category) || '';

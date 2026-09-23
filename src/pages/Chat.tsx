@@ -56,7 +56,7 @@ export default function Chat() {
       <div className="flex-1 overflow-y-auto space-y-4 pb-4">
         {chatMessages.length === 0 && (
           <div className="text-center text-gray-400 text-sm mt-10">
-            Try asking: "Am I eligible for Ayushman Bharat?" or "How to apply for PM Awas?"
+            Try asking: "Am I eligible for Ayushman Bharat?" or "How to apply for PM Awas yojna?"
           </div>
         )}
         {chatMessages.map((m) => (

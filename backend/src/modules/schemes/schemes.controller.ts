@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { SchemesService } from './schemes.service';
+import { toFrontendScheme } from '../../utils/transform';
 
 const schemesService = new SchemesService();
 
@@ -45,9 +46,23 @@ export class SchemesController {
   }
 
   async getSchemeById(req: Request, res: Response) {
-    const id = this.getNumericParam(req.params.id, 0);
-    const scheme = await schemesService.getSchemeById(id);
-    res.json({ success: true, data: scheme });
+    const idParam = this.getStringParam(req.params.id);
+    let scheme;
+
+    if (idParam && !isNaN(Number(idParam))) {
+      const id = Number(idParam);
+      scheme = await schemesService.getSchemeById(id);
+    } else {
+      scheme = await schemesService.getSchemeByNameOrId(idParam || '');
+    }
+
+    if (!scheme) {
+      res.status(404).json({ success: false, message: 'Scheme not found' });
+      return;
+    }
+
+    const frontendScheme = toFrontendScheme(scheme as any);
+    res.json(frontendScheme);
   }
 
   async getSchemesByCategory(req: Request, res: Response) {

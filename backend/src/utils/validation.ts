@@ -11,6 +11,11 @@ export const loginSchema = z.object({
   password: z.string().min(6),
 });
 
+const yesNoBoolean = z.preprocess(
+  (value) => value === 'Yes' ? true : value === 'No' ? false : value,
+  z.boolean(),
+);
+
 export const eligibilitySchema = z.object({
   name: z.string().optional(),
   age: z.coerce.number().min(1),
@@ -20,8 +25,8 @@ export const eligibilitySchema = z.object({
   occupation: z.string().optional(),
   annualIncome: z.coerce.number().min(0),
   category: z.string().optional(),
-  disability: z.coerce.boolean().optional(),
-  student: z.coerce.boolean().optional(),
+  disability: yesNoBoolean.optional(),
+  student: yesNoBoolean.optional(),
 });
 
 export const explainSchema = z.object({

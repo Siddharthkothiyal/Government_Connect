@@ -11,6 +11,7 @@ exports.loginSchema = zod_1.z.object({
     email: zod_1.z.string().email(),
     password: zod_1.z.string().min(6),
 });
+const yesNoBoolean = zod_1.z.preprocess((value) => value === 'Yes' ? true : value === 'No' ? false : value, zod_1.z.boolean());
 exports.eligibilitySchema = zod_1.z.object({
     name: zod_1.z.string().optional(),
     age: zod_1.z.coerce.number().min(1),
@@ -20,8 +21,8 @@ exports.eligibilitySchema = zod_1.z.object({
     occupation: zod_1.z.string().optional(),
     annualIncome: zod_1.z.coerce.number().min(0),
     category: zod_1.z.string().optional(),
-    disability: zod_1.z.coerce.boolean().optional(),
-    student: zod_1.z.coerce.boolean().optional(),
+    disability: yesNoBoolean.optional(),
+    student: yesNoBoolean.optional(),
 });
 exports.explainSchema = zod_1.z.object({
     schemeId: zod_1.z.coerce.number(),

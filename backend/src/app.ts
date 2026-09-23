@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import pino from 'pino-http';
 import dotenv from 'dotenv';
+import { env } from './config/env';
 
 import authRoutes from './modules/auth/auth.routes';
 import schemesRoutes from './modules/schemes/schemes.routes';
@@ -27,7 +28,7 @@ const limiter = rateLimit({
 
 app.use(pino());
 app.use(helmet());
-app.use(cors());
+app.use(cors({ origin: env.FRONTEND_URL }));
 app.use(limiter);
 app.use(express.json());
 

@@ -13,6 +13,7 @@ const envSchema = zod_1.default.object({
     GEMINI_API_KEY: zod_1.default.string(),
     PORT: zod_1.default.coerce.number().default(5000),
     NODE_ENV: zod_1.default.enum(['development', 'production', 'test']).default('development'),
+    FRONTEND_URL: zod_1.default.string().url().default('http://localhost:5173'),
 });
 const parsedEnv = envSchema.safeParse(process.env);
 if (!parsedEnv.success) {
